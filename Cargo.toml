@@ -4,4 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+chrono = { version = "0.4.38", features = ["serde"] }
 glicko2 = { path = "../glicko2-rust/" } # Depend on the library as it exists in the local filesystem
+serde = { version = "1.0.204", features = ["derive"] }
+serde_json = "1.0.122"
