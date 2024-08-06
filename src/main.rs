@@ -5,6 +5,56 @@ use serde_json;
 use chrono::{DateTime, TimeZone, Utc, Local};
 use chrono::offset::LocalResult;
 use chrono::offset::LocalResult::{Single, Ambiguous, None};
+use std::fs;
+use std::error::Error;
+
+
+#[derive(Serialize,Deserialize,Debug)]
+struct Outcome {
+    #[serde(default)]
+    ignore: bool,
+    p1_name: String,
+    p2_name: String,
+    p1_gc: i8,
+    p2_gc: i8,
+    date_time: chrono::DateTime<Utc>,
+}
+
+
+impl Default for Outcome {
+    fn default() -> Outcome {
+        Outcome {
+            ignore: false,
+            p1_name: String::from("p1_name"),
+            p2_name: String::from("p2_name"),
+            p1_gc: 0,
+            p2_gc: 0,
+            date_time: Utc::now(),
+        }
+    }
+}
+
+
+fn read_rating_period_file(fp: &str) -> Result<Vec<Outcome>, Box<dyn Error>> {
+    let file_contents: String;
+
+    match fs::read_to_string(fp) {
+        Ok(s) => file_contents = s,
+        Err(e) => return Err(Box::new(e)),
+    };
+
+    println!("file contents: {file_contents}");
+
+    match serde_json::from_str::<Vec<Outcome>>(&file_contents) {
+        Ok(s) => {
+            for o in s.iter() {
+                println!("{o:#?}");
+            }
+            Ok(s)
+        },
+        Err(e) => Err(Box::new(e)),
+    }
+}
 
 
 /// Converts a year, month, day integer pair from the local time zone to a full, complete, Utc
@@ -30,4 +80,20 @@ fn main() {
 
 
     println!("");
+
+    let rating_period_file_fp = "TSE14PRO.json";
+
+    match read_rating_period_file(rating_period_file_fp) {
+        Ok(outcomes) => {
+            for o in outcomes {
+                println!("{o:#?}");
+            }
+        },
+        Err(e) => {
+            println!("ERROR: Could not read rating period file.\n \
+                      \tINPUT: {rating_period_file_fp}\n \
+                      \tERROR MESSAGE: {e:#?}");
+            return ();
+        }
+    }
 }
